@@ -1,10 +1,10 @@
-import {Component,HostListener,OnInit,OnDestroy} from '@angular/core';
+import {Component,OnInit,OnDestroy} from '@angular/core';
 import {RouterLink,ActivatedRoute} from '@angular/router';
 import {FormsModule} from '@angular/forms';
 import {Store} from './store';
 import {MenuService} from './menu';
 import {GROUPS,REWARDS,WHATSAPP,TAKEAWAY_CHARGE} from './data';
-import {UPI_LINK,INSTA_URL,REEL_LINKS} from './extras';
+import {INSTA_URL,REEL_LINKS} from './extras';
 import {Pic,Q,MapBox,Safe} from './ui';
 
 @Component({standalone:true,imports:[RouterLink,Pic,Q,MapBox],template:`
@@ -46,17 +46,8 @@ export class Menu{g=GROUPS[0];constructor(public s:Store,public m:MenuService,r:
  <select [(ngModel)]="s.reward"><option [ngValue]="null">No reward</option>
  @for(r of rw;track r.pts){<option [ngValue]="r" [disabled]="s.points<r.pts">{{r.pts}} pts – {{r.label}}</option>}</select>
  <p>Subtotal ₹{{s.subtotal}}</p>@if(s.discount){<p>Discount −₹{{s.discount}}</p>}@if(s.fee){<p>Takeaway charge +₹{{s.fee}}</p>}<h2>Total ₹{{s.total}}</h2></div>
-<div class="card paycard"><div class="tabs"><button class="btn" [class.alt]="pay!=='upi'" (click)="pay='upi'">📷 Scan QR</button><button class="btn" [class.alt]="pay!=='cash'" (click)="pay='cash'">💵 Hand Cash</button></div>
- @if(pay==='upi'){<div class="c"><div class="qrbox"><img src="assets/payment-qr.png" alt="Payment QR" (click)="openApp()"></div>
-  <p><b>Tap the QR</b> to open your UPI app, enter <b>₹{{s.total}}</b> and pay. (On a computer, scan it with your phone.)</p>
-  <p><a class="btn alt" href="assets/payment-qr.png" download="yellove-payment-qr.png">⬇ Save QR</a></p>
-  @if(asked){<div class="ask"><p>Did your payment go through?</p><button class="btn" (click)="send(false)">Yes – send my order on WhatsApp</button> <button class="btn alt" (click)="asked=false">Not yet</button></div>}
-  @else{<p><button class="btn" (click)="send(false)">I've paid – send order on WhatsApp</button></p>}
-  <small>Check the shop name before you pay.</small></div>}
- @else{<div class="c"><div class="cash">💵</div><p>Pay ₹{{s.total}} in cash at the shop.</p><button class="btn" (click)="send(true)">Send order on WhatsApp (Hand Cash)</button></div>}</div></div>}`})
-export class Cart{rw=REWARDS;tc=TAKEAWAY_CHARGE;pay:'upi'|'cash'='upi';asked=false;paying=false;constructor(public s:Store){}
- openApp(){this.paying=true;window.location.href=UPI_LINK;}
- @HostListener('document:visibilitychange') back(){if(!document.hidden&&this.paying){this.paying=false;this.asked=true;}}
+<div class="card paycard c"><div class="cash">💵</div><h3>Pay by Hand Cash</h3><p>Pay <b>₹{{s.total}}</b> in cash at the shop.</p><button class="btn" (click)="send(true)">Send order on WhatsApp</button></div></div>}`})
+export class Cart{rw=REWARDS;tc=TAKEAWAY_CHARGE;constructor(public s:Store){}
  send(cash:boolean){const s=this.s;let m=`New Order – Yellove Dessert\n${cash?'Name':'Customer Name'}: ${s.user!.name}\nPhone: ${s.user!.phone}\n`;
   if(s.mode==='take')m+=`Order Type: Takeaway\n`;m+='\n';
   s.cart.forEach(c=>m+=`${c.qty} x ${c.item.name}${c.size==='d'?' (Double)':''} = ₹${c.qty*s.unit(c)}\n`);
@@ -64,7 +55,7 @@ export class Cart{rw=REWARDS;tc=TAKEAWAY_CHARGE;pay:'upi'|'cash'='upi';asked=fal
   m+=`Subtotal: ₹${s.subtotal}\nDiscount: ₹${s.discount}\n`;if(s.fee)m+=`Takeaway charge: ₹${s.fee}\n`;
   m+=`Total: ₹${s.total}\n${cash?'(Pay by Hand Cash)':'(Paid via UPI QR)'}`;
   window.open(`https://wa.me/${WHATSAPP}?text=${encodeURIComponent(m)}`,'_blank');
-  if(s.reward){s.points-=s.reward.pts;s.savePts();}s.cart=[];s.reward=null;this.asked=false;}}
+  if(s.reward){s.points-=s.reward.pts;s.savePts();}s.cart=[];s.reward=null;}}
 
 @Component({standalone:true,imports:[Safe,Q],template:`
 <h1 class="ttl script">Latest on Instagram</h1><yl-quote k="updates"/>

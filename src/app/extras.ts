@@ -1,6 +1,4 @@
-// Shop settings – edit here (payment QR image: src/assets/payment-qr.png)
-// Same content as your payment QR (no amount). Tapping the QR opens the customer's UPI app with this.
-export const UPI_LINK = 'upi://pay?pa=paytm.s283z6k@pty&pn=Paytm&tn=Verified%20Paytm%20Merchant';
+// Shop settings – edit here
 export const INSTA_URL = 'https://www.instagram.com/yellove_dessert_rathinam/';
 // Paste links of your latest reels/posts here (open the reel on Instagram > Share > Copy link). They show as video cards.
 export const REEL_LINKS: string[] = [];
@@ -19,6 +17,14 @@ export const QUOTES: Record<string, string[]> = {
 // ADMIN: log in with this name + number to open the Admin page. The password is NOT stored here – it is your Firebase Authentication password.
 export const ADMIN = { name: 'Srini', phone: '9384463160' };
 // FIREBASE (real-time menu). Fill these from the Firebase console (see README). Leave databaseURL empty to run without Firebase.
-export const FIREBASE = { apiKey: '', authDomain: '', databaseURL: '', projectId: '', appId: '' };
+export const FIREBASE = {
+    apiKey: "AIzaSyAnUiOV4SIO3cR8vhqsvFDFjfDKs_9hfS4",
+    authDomain: "yellove-dessert.firebaseapp.com",
+    databaseURL: "https://yellove-dessert-default-rtdb.asia-southeast1.firebasedatabase.app",
+    projectId: "yellove-dessert",
+    storageBucket: "yellove-dessert.firebasestorage.app",
+    messagingSenderId: "429245776676",
+    appId: "1:429245776676:web:1476efff67df44fb0269b1"
+};
 // The email of the admin user you create in Firebase Authentication. Its password is what you type on the login screen.
 export const ADMIN_EMAIL = 'sriniaj435@gmail.com';
