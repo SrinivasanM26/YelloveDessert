@@ -1,5 +1,6 @@
 // Shop settings – edit here
-export const UPI = { id: 'paytm.s283z6k@pty', name: 'GAYATHRI NAGARAJ' };           // decoded from your payment QR
+export const UPI = { id: 'paytm.s283z6k@pty', name: 'Yellove Dessert' };
+export const USE_UPI_LINKS = true;
 export const INSTA_URL = 'https://www.instagram.com/yellove_dessert_rathinam/';
 // Paste links of your latest reels/posts here (open the reel on Instagram > Share > Copy link). They show as video cards.
 export const REEL_LINKS: string[] = [];
