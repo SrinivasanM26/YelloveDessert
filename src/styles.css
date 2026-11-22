@@ -58,3 +58,4 @@ select,input{width:100%;padding:10px;margin:6px 0;border-radius:8px;border:1px s
 .tag{background:#e53935;color:#fff;border-radius:10px;padding:1px 8px;font-size:.7rem;font-weight:700}.item .tag{position:absolute;margin:6px}
 .form{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:8px;align-items:center}
 .item{position:relative}
+.snake{display:block;margin:12px auto;background:#fff8d6;border:3px solid var(--d);border-radius:12px;touch-action:none;max-width:100%}.pad{text-align:center}.pad .btn{margin:3px;padding:8px 16px}

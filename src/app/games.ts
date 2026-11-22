@@ -1,4 +1,4 @@
-import {Component,OnDestroy} from '@angular/core';
+import {Component,OnDestroy,ViewChild,ElementRef,AfterViewInit,HostListener} from '@angular/core';
 import {Store} from './store';
 import {Q} from './ui';
 
@@ -74,8 +74,43 @@ export class HiLo{
  guess(up:boolean){if(this.msg)return;const n=this.r(),ok=n===this.cur||(up?n>this.cur:n<this.cur);this.last=''+n;this.cur=n;
   if(ok){if(++this.streak>=7)this.msg=this.s.award('hilo',500);}else if(--this.lives<=0)this.msg='Game over';}}
 
-@Component({standalone:true,imports:[Memory,Whack,Simon,Odd,HiLo,Q],template:`
-<h1 class="ttl">Play & Win</h1><yl-quote k="game"/><p class="c">⭐ {{s.points}} points · each game's points can be earned once a day</p>
+@Component({selector:'g-snake',standalone:true,template:`
+<p class="c">Steer the snake to eat desserts: <b>+10 points</b> each. You get <b>3 lives per day</b> – hitting a wall or yourself costs one.</p>
+<p class="c big">{{'❤️'.repeat(lives)}}{{'🖤'.repeat(3-lives)}} · 🍰 {{ate}} eaten · +{{ate*10}} pts</p>
+<canvas #cv width="300" height="300" class="snake" (touchstart)="ts($event)" (touchend)="te($event)"></canvas>
+<div class="pad"><button class="btn" (click)="turn(0,-1)">⬆️</button><br><button class="btn" (click)="turn(-1,0)">⬅️</button><button class="btn" (click)="turn(0,1)">⬇️</button><button class="btn" (click)="turn(1,0)">➡️</button></div>
+<p class="c msg">{{msg}} @if(!run&&lives>0){<button class="btn" (click)="start()">{{msg?'Play again':'Start'}}</button>}</p>`})
+export class Snake implements AfterViewInit,OnDestroy{
+ @ViewChild('cv') cv!:ElementRef<HTMLCanvasElement>;
+ N=15;C=20;body:{x:number;y:number}[]=[];d={x:1,y:0};nd={x:1,y:0};food={x:5,y:5,e:'🍰'};ate=0;run=false;msg='';lives=3;t:any;tx=0;ty=0;
+ em=['🍰','🧇','🍩','🍪','🍫','🍨','🧁','🍓'];
+ constructor(private s:Store){const k=this.key(),r=JSON.parse(localStorage.getItem(k)||'null');this.lives=r&&r.day===new Date().toDateString()?r.lives:3;
+  if(this.lives<=0)this.msg='No lives left today – come back tomorrow! 🌙';}
+ key(){return 'yl_snake_'+this.s.user!.phone;}
+ ngAfterViewInit(){this.draw();}ngOnDestroy(){clearInterval(this.t);}
+ start(){if(this.lives<=0)return;this.body=[{x:7,y:7},{x:6,y:7},{x:5,y:7}];this.d={x:1,y:0};this.nd={x:1,y:0};this.ate=0;this.msg='';this.run=true;this.place();
+  clearInterval(this.t);this.t=setInterval(()=>this.tick(),150);}
+ place(){let p:{x:number;y:number};do{p={x:Math.floor(Math.random()*this.N),y:Math.floor(Math.random()*this.N)};}while(this.body.some(b=>b.x===p.x&&b.y===p.y));
+  this.food={...p,e:this.em[Math.floor(Math.random()*this.em.length)]};}
+ turn(x:number,y:number){if(!this.run||(x===-this.d.x&&y===-this.d.y))return;this.nd={x,y};}
+ @HostListener('window:keydown',['$event']) key_(e:KeyboardEvent){const m:any={ArrowUp:[0,-1],ArrowDown:[0,1],ArrowLeft:[-1,0],ArrowRight:[1,0]};
+  if(this.run&&m[e.key]){e.preventDefault();this.turn(m[e.key][0],m[e.key][1]);}}
+ ts(e:TouchEvent){this.tx=e.touches[0].clientX;this.ty=e.touches[0].clientY;}
+ te(e:TouchEvent){const dx=e.changedTouches[0].clientX-this.tx,dy=e.changedTouches[0].clientY-this.ty;
+  if(Math.abs(dx)>Math.abs(dy))this.turn(dx>0?1:-1,0);else this.turn(0,dy>0?1:-1);}
+ tick(){this.d=this.nd;const h={x:this.body[0].x+this.d.x,y:this.body[0].y+this.d.y};
+  if(h.x<0||h.y<0||h.x>=this.N||h.y>=this.N||this.body.some(b=>b.x===h.x&&b.y===h.y))return this.die();
+  this.body.unshift(h);
+  if(h.x===this.food.x&&h.y===this.food.y){this.ate++;this.s.addPoints(10);this.place();}else this.body.pop();
+  this.draw();}
+ die(){clearInterval(this.t);this.run=false;this.lives--;localStorage.setItem(this.key(),JSON.stringify({day:new Date().toDateString(),lives:this.lives}));
+  this.msg=this.lives>0?`Ouch! You ate ${this.ate} and earned ${this.ate*10} points. ${this.lives} life(s) left today.`:`You earned ${this.ate*10} points. No lives left today – come back tomorrow! 🌙`;this.draw();}
+ draw(){const c=this.cv?.nativeElement.getContext('2d');if(!c)return;c.clearRect(0,0,300,300);c.font='18px serif';c.textBaseline='middle';c.textAlign='center';
+  c.fillText(this.food.e,this.food.x*20+10,this.food.y*20+11);
+  this.body.forEach((b,i)=>{c.fillStyle=i?'#8d5524':'#3b1f0e';c.beginPath();c.roundRect(b.x*20+1,b.y*20+1,18,18,5);c.fill();});}}
+
+@Component({standalone:true,imports:[Snake,Memory,Whack,Simon,Odd,HiLo,Q],template:`
+<h1 class="ttl">Play & Win</h1><yl-quote k="game"/><p class="c">⭐ {{s.points}} points · win-games pay once a day per game · Snake pays 10 points per dessert</p>
 <div class="tabs">@for(g of games;track g.k){<button class="btn" [class.alt]="cur!==g.k" (click)="cur=g.k">{{g.n}}</button>}</div>
-@switch(cur){@case('memory'){<g-memory/>}@case('whack'){<g-whack/>}@case('simon'){<g-simon/>}@case('odd'){<g-odd/>}@case('hilo'){<g-hilo/>}}`})
-export class Game{cur='memory';games=[{k:'memory',n:'🧠 Memory Match'},{k:'whack',n:'🧇 Waffle Whack'},{k:'simon',n:'🍓 Fruit Simon'},{k:'odd',n:'🔍 Odd One Out'},{k:'hilo',n:'🃏 Higher/Lower'}];constructor(public s:Store){}}
+@switch(cur){@case('memory'){<g-memory/>}@case('whack'){<g-whack/>}@case('simon'){<g-simon/>}@case('odd'){<g-odd/>}@case('hilo'){<g-hilo/>}@case('snake'){<g-snake/>}}`})
+export class Game{cur='memory';games=[{k:'memory',n:'🧠 Memory Match'},{k:'whack',n:'🧇 Waffle Whack'},{k:'simon',n:'🍓 Fruit Simon'},{k:'odd',n:'🔍 Odd One Out'},{k:'hilo',n:'🃏 Higher/Lower'},{k:'snake',n:'🐍 Dessert Snake'}];constructor(public s:Store){}}
